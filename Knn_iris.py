@@ -1,6 +1,7 @@
 import csv
 import random
 import math
+import operator
 
 def loadDataset(filename, split, trainingSet=[], testSet=[]):
   with open(filename, 'r') as csvfile:
@@ -20,6 +21,24 @@ def euclideanDistance(instance1, instance2, length):
     distance += pow((instance1[x] - instance2[x]),2)
   return math.sqrt(distance)
 
+def getNeighbors(trainingSet, testInstance, k):
+  distances=[]
+  length = len(testInstance)-1
+  for x in range(len(trainingSet)):
+    dist = euclideanDistance(testInstance, trainingSet[x], length)
+    distances.append((trainingSet[x], dist))
+  distances.sort(key=operator.itemgetter(1))
+  neighbors = []
+  for x in range(k):
+    neighbors.append(distances[x][0])
+  return neighbors
+
+trainSet = [[2, 2, 2, 'a'], [4, 4, 4, 'b']]
+testInstance = [5, 5, 5]
+k = 1
+neighbors = getNeighbors(trainSet, testInstance, 1)
+print(neighbors)
+  
 data1 = [2,2,2,'a']
 data2 = [4,4,4,'b']
 
