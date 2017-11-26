@@ -2,8 +2,30 @@ import random
 import math
 import operator
 
-def loadDataset(filename, split, trainingSet=[], testSet=[]):
+def loadDataset(filename_image, filename_labels, split, number, trainingSet=[], testSet=[]):
   #need to be implemented
+  file = open(filename_image , 'rb')
+  file_labels = open(filename_labels, 'rb')
+
+  i = []
+  images = []
+  #read some kind of header
+  file.read(46 +2*28)
+  file_labels.read(8)
+  
+  for p in range(number):
+    for x in range(28*28):
+      i.append(int.from_bytes(file.read(1), byteorder = 'big'))
+    i.append(int.from_bytes(file_labels.read(1), byteorder='big'))
+    images.append(i)
+    i =[]
+	
+  for x in range(len(images)):
+    if random.random() < split:
+      trainingSet.append(images[x])
+    else:
+      testSet.append(images[x])
+
 
 def euclideanDistance(instance1, instance2, length):
   distance = 0
@@ -41,3 +63,24 @@ def getAccuracy(trueSet, predictions):
     if trueSet[x][-1] == predictions[x]:
       correct += 1
   return (correct/float(len(trueSet))) * 100.0
+  
+def main():
+  trainingSet = []
+  testSet = []
+  split = 0.67
+  number = 1000
+  loadDataset('test_images.byte','test_labels.byte', split, number, trainingSet, testSet)
+  print('Train set: ' + repr(len(trainingSet)))
+  print('Test set: ' + repr(len(testSet)))
+  
+  predictions = []
+  k = 3
+  for x in range(len(testSet)):
+    neighbors = getNeighbors(trainingSet,testSet[x],k)
+    result = getResponse(neighbors)
+    predictions.append(result)
+    print('> predicted = ' + repr(result) + ', actual = ' + repr(testSet[x][-1]))
+  accuracy = getAccuracy(testSet, predictions)
+  print('Accuracy : ' + repr(accuracy) + '%')
+  
+main()
