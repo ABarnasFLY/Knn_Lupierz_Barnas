@@ -46,37 +46,28 @@ def getResponse(neighbors):
 
 def getAccuracy(trueSet, predictions):
   correct = 0
-  for x in range(len(testSet)):
-    if testSet[x][-1] is predictions[x]:
+  for x in range(len(trueSet)):
+    print(repr(predictions[x]) + ' ' + repr(trueSet[x][-1]))
+    if trueSet[x][-1] == predictions[x]:
       correct += 1
-  return (correct/float(len(testSet))) * 100.0
+  return (correct/float(len(trueSet))) * 100.0
   
-testSet = [[1,1,1,'a'], [2,2,2,'a'], [3,3,3,'b']]
-predictions = ['a', 'a', 'a']
-accuracy = getAccuracy(testSet, predictions)
-print(accuracy)  
-
-neighbors = [[1,1,1,'a'], [2,2,2,'a'], [3,3,3,'b']]
-response = getResponse(neighbors)
-print(response)
+def main():
+  trainingSet = []
+  testSet = []
+  split = 0.67
+  loadDataset('iris.data.txt', split, trainingSet, testSet)
+  print('Train set: ' + repr(len(trainingSet)))
+  print('Test set: ' + repr(len(testSet)))
   
-
-trainSet = [[2, 2, 2, 'a'], [4, 4, 4, 'b']]
-testInstance = [5, 5, 5]
-k = 1
-neighbors = getNeighbors(trainSet, testInstance, 1)
-print(neighbors)
+  predictions = []
+  k = 3
+  for x in range(len(testSet)):
+    neighbors = getNeighbors(trainingSet,testSet[x],k)
+    result = getResponse(neighbors)
+    predictions.append(result)
+    print('> predicted = ' + repr(result) + ', actual = ' + repr(testSet[x][-1]))
+  accuracy = getAccuracy(testSet, predictions)
+  print('Accuracy : ' + repr(accuracy) + '%')
   
-data1 = [2,2,2,'a']
-data2 = [4,4,4,'b']
-
-distance = euclideanDistance(data1, data2, 3)
-print('Distance = ' + repr(distance))
-
-trainingSet = []
-testSet = []
-loadDataset('iris.data.txt', 0.66, trainingSet, testSet)
-print('Train ' + repr(len(trainingSet)))
-print('Test ' + repr(len(testSet)))
-
-
+main()
