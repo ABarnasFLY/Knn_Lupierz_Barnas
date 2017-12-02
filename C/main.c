@@ -4,7 +4,7 @@
 #include <stdlib.h>
 
 //#define TEST_SET_LENGTH 1000
-#define SET_LENGTH 5000
+#define SET_LENGTH 500
 #define VECTOR_LENGTH 28*28
 
 typedef struct{
@@ -87,9 +87,8 @@ float euklideanDistance (element instance1, element instance2)
     return sqrt(distance);
 }
 
-void getNeighbours(int k, element instance, element trainTab[], int train_size, neighbour kneighbours[])
+void getNeighbours(int k, element instance, element trainTab[], int train_size, neighbour kneighbours[], neighbour neighbours[])
 {
-    neighbour neighbours[SET_LENGTH];
     for(int i = 0; i < train_size; i++)
     {
         double distance = euklideanDistance(trainTab[i], instance);
@@ -102,45 +101,58 @@ void getNeighbours(int k, element instance, element trainTab[], int train_size, 
         kneighbours[j] = neighbours[j];
     }
 }
+//k < 100
+int Knn_solver(element instance, int k, element trainTab[], int train_size, neighbour neighbours[])
+{
+    clock_t start = clock();
+    /*Do something*/
+    neighbour kneighbours[100];
+    int translate[10];
+    for(int i = 0; i < 10; i++) translate[i] = 0;
+    getNeighbours(k, instance, trainTab,train_size, kneighbours, neighbours);
+    for(int i = 0; i < k; i++)
+    {
+        if(kneighbours[i].label < 10)
+            translate[kneighbours[i].label]++;
+    }
+    int max = 0;
+    for(int i = 1; i < 10; i++)
+    {
+        if(translate[i] > translate[max]) max = i;
+    }
+    clock_t end = clock();
+    double seconds = (double)(end - start) / CLOCKS_PER_SEC;
+    printf("\n For training size = %d one digit takes: %fs\n", train_size, seconds);
+    return max;
+}
 
 int main()
 {
-    static element images[5000];
-    static element training[5000];
-    static element testing[5000];
-    read_mnist(images, 5000, "test_labels.byte", "test_images.byte");
-    int test = split(training,testing, images,5000,66);
+//#define DEBUGING
+#ifdef DEBUGING
+    static element images[SET_LENGTH];
+    static element training[SET_LENGTH];
+    static element testing[SET_LENGTH];
+    static neighbour neighbours[SET_LENGTH];
+
+    read_mnist(images, SET_LENGTH, "test_labels.byte", "test_images.byte");
+    int test = split(training,testing, images,SET_LENGTH,66);
+    int train = SET_LENGTH - test;
+#else
+    static element training[59999];
+    static element testing[9999];
+    static neighbour neighbours[59999];
+
+    read_mnist(testing, 9999, "../Data/test_labels.byte", "../Data/test_images.byte");
+    read_mnist(training, 59999, "../Data/train_labels.byte", "../Data/train_images.byte");
+    int test = 9999;
+    int train = 59999;
+#endif
     float errors = 0.0;
     for(int i = 0; i < test; i++)
     {
-        neighbour n;
-        getNeighbours(1, testing[i], training, 5000-test, &n);
-        if(n.label != testing[i].label) errors+= 1.0;
-        if(!(i%100)) printf(".");
+        if(Knn_solver(testing[i], 5, training,train, neighbours) != testing[i].label) errors += 1.0;
     }
-    printf("Succsess in : %f\n", (test - errors) / test);
-    /*
-    for (int i = 0; i < 20; i++)
-    {
-        printf("%d\n", images[i].label);
-    }
-    for (int j = 0; j < 20; j++)
-    {
-        for (int k = 0; k < 28; k++)
-        {
-            for (int l = 0; l < 28; l++)
-            {
-                if (images[j].vector[k * 28 + l] > 50)
-                    printf("@");
-                else
-                    printf("~");
-            }
-            printf("\n");
-        }
-        printf("%d\n", images[j].label);
-    }
-
-    printf("Size of testing database: %d\n", split(training, testing, images, 20, 66));*/
-
+    printf("\n---------\nSuccsess in : %f\n", (test - errors) / test);
     return 0;
 }
