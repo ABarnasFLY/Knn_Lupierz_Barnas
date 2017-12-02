@@ -36,7 +36,7 @@ void read_mnist(element images[], int number, const char *label, const char *ima
     }
     else
     {
-        printf("SUCCESS");
+        printf("FILE READ SUCCESSFULLY\n");
         fseek(file_images, 46 + 2 * 28, SEEK_SET);
         fseek(file_labels, 8, SEEK_SET);
 
@@ -104,7 +104,6 @@ void getNeighbours(int k, element instance, element trainTab[], int train_size, 
 //k < 100
 int Knn_solver(element instance, int k, element trainTab[], int train_size, neighbour neighbours[])
 {
-    clock_t start = clock();
     /*Do something*/
     neighbour kneighbours[100];
     int translate[10];
@@ -120,9 +119,6 @@ int Knn_solver(element instance, int k, element trainTab[], int train_size, neig
     {
         if(translate[i] > translate[max]) max = i;
     }
-    clock_t end = clock();
-    double seconds = (double)(end - start) / CLOCKS_PER_SEC;
-    printf("\n For training size = %d one digit takes: %fs\n", train_size, seconds);
     return max;
 }
 
@@ -149,10 +145,13 @@ int main()
     int train = 59999;
 #endif
     float errors = 0.0;
+    int prc = 0;
     for(int i = 0; i < test; i++)
     {
         if(Knn_solver(testing[i], 5, training,train, neighbours) != testing[i].label) errors += 1.0;
+        if(i%100 == 0) printf("%d\%\n", ++prc);
     }
     printf("\n---------\nSuccsess in : %f\n", (test - errors) / test);
+    system("PAUSE");
     return 0;
 }
