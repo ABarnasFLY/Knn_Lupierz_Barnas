@@ -15,6 +15,7 @@ void read_mnist(element images[], int number, const char *label, const char *ima
 {
 	FILE *file_labels = fopen(label, "rb");
 	FILE *file_images = fopen(image, "rb");
+	FILE *file_in_c = fopen("mnist.h", "w"); 
 	if (!file_labels || !file_images)
 	{
 		printf("ERROR");
@@ -32,6 +33,13 @@ void read_mnist(element images[], int number, const char *label, const char *ima
 		fread(&bufor, 1, 1, file_labels);
 		images[i].label = bufor;
 		fread(&images[i].vector, 1, VECTOR_LENGTH, file_images);
+		for(int j = 0; j < VECTOR_LENGTH; j++)
+		{
+			char text[25];
+			sprintf(text, "tab[%d] = %d;\n", i*VECTOR_LENGTH +j, images[i].vector[j]);
+			fwrite(text, 1, len(text), file_in_c)
+		}
+		printf("%.3fprc\r", i / (float) number); 
  	}
 
 	fclose(file_images);
@@ -66,7 +74,7 @@ void main(void)
 	element images[9000];
 	element training[9000];
 	element testing[9000];
-	read_mnist(images, 9000, "test_labels.byte", "test_images.byte");
+    read_mnist(images, 1, "../../Data/test_labels.byte", "../../Data/test_images.byte");
 
 /*
 	for (int i = 0; i < 20; i++)
